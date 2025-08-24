@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div class="container">
+    <h1>리뷰 작성</h1>
+
+    <div class="mb-3">
+        <label for="book-search-keyword" class="form-label">책 검색</label>
+        <div class="input-group">
+            <input type="text" id="book-search-keyword" class="form-control" placeholder="책 제목, 저자 등으로 검색">
+            <button class="btn btn-outline-secondary" type="button" onclick="searchBooks()">검색</button>
+        </div>
+    </div>
+    <div id="search-results" class="list-group mb-3"></div>
+
+    <hr>
+
+    <form th:action="@{/article/add}" th:object="${article}" method="post">
+        <input type="hidden" id="bookIsbn" th:field="*{bookIsbn}">
+        <input type="hidden" id="bookTitle" th:field="*{bookTitle}">
+        <input type="hidden" id="bookAuthor" th:field="*{bookAuthor}">
+        <input type="hidden" id="bookPublisher" th:field="*{bookPublisher}">
+        <input type="hidden" id="bookCoverUrl" th:field="*{bookCoverUrl}">
+
+        <div id="selected-book-info" class="mb-3" style="display: none;">
+            <h5>선택된 책</h5>
+            <div class="d-flex">
+                <img id="selected-book-cover" src="" alt="책 표지" style="max-width: 100px; margin-right: 15px;">
+                <div>
+                    <p class="mb-1"><strong>제목:</strong> <span id="selected-book-title"></span></p>
+                    <p class="mb-1"><strong>저자:</strong> <span id="selected-book-author"></span></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label for="title" class="form-label">리뷰 제목</label>
+            <input type="text" class="form-control" id="title" th:field="*{title}">
+            <p class="text-danger" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></p>
+        </div>
+        <div class="mb-3">
+            <label for="description" class="form-label">리뷰 내용</label>
+            <textarea class="form-control" id="description" rows="10" th:field="*{description}"></textarea>
+            <p class="text-danger" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></p>
+        </div>
+
+        <button type="submit" class="btn btn-primary">저장</button>
+        <a href="/article/list" class="btn btn-secondary">취소</a>
+    </form>
+</div>
+
+<script>
+    async function searchBooks() {
+        const keyword = document.getElementById('book-search-keyword').value;
+        if (!keyword) {
+            alert('검색어를 입력해주세요.');
+            return;
+        }
+
+        try {
+            const response = await fetch(`/api/books/search?query=${keyword}`);
+            const books = await response.json();
+
+            const resultsContainer = document.getElementById('search-results');
+            resultsContainer.innerHTML = ''; // 이전 결과 초기화
+
+            books.forEach(book => {
+                // 각 검색 결과를 표시할 아이템 생성
+                const item = document.createElement('a');
+                item.href = '#';
+                item.className = 'list-group-item list-group-item-action';
+                item.innerHTML = `
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">${book.title}</h5>
+                        <small>${book.publisher}</small>
+                    </div>
+                    <p class="mb-1">저자: ${book.author}</p>
+                    <img src="${book.image}" alt="표지" style="max-height: 50px;">
+                `;
+                // 아이템 클릭 이벤트: 폼에 책 정보 채우기
+                item.onclick = (e) => {
+                    e.preventDefault();
+                    selectBook(book);
+                };
+                resultsContainer.appendChild(item);
+            });
+        } catch (error) {
+            console.error('책 검색 실패:', error);
+        }
+    }
+
+    function selectBook(book) {
+        // hidden input에 값 채우기
+        document.getElementById('bookIsbn').value = book.isbn;
+        document.getElementById('bookTitle').value = book.title;
+        document.getElementById('bookAuthor').value = book.author;
+        document.getElementById('bookPublisher').value = book.publisher;
+        document.getElementById('bookCoverUrl').value = book.image;
+
+        // 사용자 확인용 정보 표시
+        document.getElementById('selected-book-title').innerText = book.title;
+        document.getElementById('selected-book-author').innerText = book.author;
+        document.getElementById('selected-book-cover').src = book.image;
+        document.getElementById('selected-book-info').style.display = 'block';
+
+        // 검색 결과 숨기기
+        document.getElementById('search-results').innerHTML = '';
+    }
+</script>
+</body>
+</html>

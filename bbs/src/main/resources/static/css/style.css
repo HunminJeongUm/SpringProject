@@ -1,0 +1,33 @@
+/* 제목 링크를 감싸는 컨테이너를 상대 위치 기준으로 설정 (툴팁 위치의 기준점) */
+.book-title-link {
+    position: relative;
+    display: inline-block; /* 컨텐츠 크기에 맞게 영역 차지 */
+}
+
+/* 툴팁 이미지의 기본 상태 (평소에는 숨김) */
+.book-title-link .book-cover-tooltip {
+    visibility: hidden; /* 보이지 않게 */
+    opacity: 0;         /* 투명하게 */
+
+    width: 150px;       /* 툴팁 이미지 너비 */
+    background-color: white;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    padding: 5px;
+    border-radius: 5px;
+
+    position: absolute; /* 기준점(제목 링크)에 따라 절대 위치 지정 */
+    z-index: 10;        /* 다른 요소들 위에 보이도록 설정 */
+    top: 50%;       /* 제목 링크 위쪽에 위치 */
+    left: 105%;
+    margin-left: -75px; /* 너비의 절반만큼 왼쪽으로 이동하여 중앙 정렬 */
+
+    /* 부드러운 전환 효과 */
+    transition: opacity 0.3s ease;
+}
+
+/* 제목 링크에 마우스를 올렸을 때(hover), 툴팁 이미지의 상태 */
+.book-title-link:hover .book-cover-tooltip {
+    visibility: visible; /* 보이게 */
+    opacity: 1;          /* 불투명하게 */
+}
